@@ -1,3 +1,10 @@
 *.exe
-.vscode
+*.o
+*.gcno
+*.gcda
+*.gcov
+*.temp
 .DS_Store
+.vscode
+*.info
+*.d
