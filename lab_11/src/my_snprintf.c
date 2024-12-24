@@ -1,301 +1,37 @@
 #include <stdarg.h>
 #include "my_snprintf.h"
 
-static void long_int_convert(char *s, long int value)
+static void decimal_convert(char *s, long int value, int base) 
 {
-    long int temp = value;
-    int len = 0;
-    int is_negative = 0;
-
-    if (value == 0)
-    {
-        s[len++] = '0';
-        s[len] = '\0';
-        return;
-    }
+    int is_negative = (value < 0 && base == 10);
+    char temp[32];
+    size_t index = 0;
+    size_t ind = 0;
+    unsigned long abs_value;
+    int digit;
 
     if (value < 0)
+        abs_value = -(unsigned long)value;
+    else 
+        abs_value = (unsigned long)value;
+
+    if (abs_value == 0)
+        temp[index++] = '0';
+
+    while (abs_value > 0) 
     {
-        is_negative = 1;
-        value = -value;
-        temp = value;
-    }
-
-    while (value != 0)
-    {
-        value /= 10;
-        len++;
-    }
-
-    if (is_negative)
-        len++;
-
-    s[len] = '\0';
-    if (is_negative)
-        s[0] = '-';
-
-    while (temp != 0)
-    {
-        s[--len] = (temp % 10) + '0';
-        temp /= 10;
-    }
-}
-
-static void short_int_convert(char *s, short int value)
-{
-    short int temp = value;
-    int len = 0;
-    int is_negative = 0;
-
-    if (value == 0)
-    {
-        s[len++] = '0';
-        s[len] = '\0';
-        return;
-    }
-
-    if (value < 0)
-    {
-        is_negative = 1;
-        value = -value;
-        temp = value;
-    }
-
-    while (value != 0)
-    {
-        value /= 10;
-        len++;
+        digit = abs_value % base;
+        temp[index++] = (digit < 10) ? (digit + '0') : (digit - 10 + 'a');
+        abs_value /= base;
     }
 
     if (is_negative)
-        len++;
+        temp[index++] = '-';
 
-    s[len] = '\0';
-    if (is_negative)
-        s[0] = '-';
+    for (size_t i = index; i > 0; i--)
+        s[ind++] = temp[i - 1];
 
-    while (temp != 0)
-    {
-        s[--len] = (temp % 10) + '0';
-        temp /= 10;
-    }
-}
-
-static void int_convert(char *s, int value)
-{
-    int temp = value;
-    int len = 0;
-    int is_negative = 0;
-
-    if (value == 0)
-    {
-        s[len++] = '0';
-        s[len] = '\0';
-        return;
-    }
-
-    if (value < 0)
-    {
-        is_negative = 1;
-        value = -value;
-        temp = value;
-    }
-
-    while (value != 0)
-    {
-        value /= 10;
-        len++;
-    }
-
-    if (is_negative)
-        len++;
-
-    s[len] = '\0';
-    if (is_negative)
-        s[0] = '-';
-
-    while (temp != 0)
-    {
-        s[--len] = (temp % 10) + '0';
-        temp /= 10;
-    }
-}
-
-static void oct_convert(char *s, unsigned int value)
-{
-    int index = 0;
-    int start = 0;
-    int end;
-    char temp;
-
-    if (value == 0)
-        s[index++] = '0';
-
-    while (value > 0)
-    {
-        s[index++] = (value % 8) + '0';
-        value /= 8;
-    }
-
-    s[index] = '\0';
-    end = index - 1;
-
-    while (start < end)
-    {
-        temp = s[start];
-        s[start] = s[end];
-        s[end] = temp;
-        start++;
-        end--;
-    }
-}
-
-static void long_oct_convert(char *s, unsigned long int value)
-{
-    int index = 0;
-    int start = 0;
-    int end;
-    char temp;
-
-    if (value == 0)
-        s[index++] = '0';
-
-    while (value > 0)
-    {
-        s[index++] = (value % 8) + '0';
-        value /= 8;
-    }
-
-    s[index] = '\0';
-    end = index - 1;
-
-    while (start < end)
-    {
-        temp = s[start];
-        s[start] = s[end];
-        s[end] = temp;
-        start++;
-        end--;
-    }
-}
-
-static void short_oct_convert(char *s, unsigned short int value)
-{
-    int index = 0;
-    int start = 0;
-    int end;
-    char temp;
-
-    if (value == 0)
-        s[index++] = '0';
-
-    while (value > 0)
-    {
-        s[index++] = (value % 8) + '0';
-        value /= 8;
-    }
-
-    s[index] = '\0';
-    end = index - 1;
-
-    while (start < end)
-    {
-        temp = s[start];
-        s[start] = s[end];
-        s[end] = temp;
-        start++;
-        end--;
-    }
-}
-
-static void hex_convert(char *s, unsigned int value)
-{
-    const char hex_digits[] = "0123456789abcdef";
-    int index = 0;
-    int start = 0;
-    int end;
-    char temp;
-
-    if (value == 0)
-        s[index++] = '0';
-
-    while (value > 0)
-    {
-        s[index++] = hex_digits[value % 16];
-        value /= 16;
-    }
-
-    s[index] = '\0';
-    end = index - 1;
-
-    while (start < end)
-    {
-        temp = s[start];
-        s[start] = s[end];
-        s[end] = temp;
-        start++;
-        end--;
-    }
-}
-
-static void long_hex_convert(char *s, unsigned long int value)
-{
-    const char hex_digits[] = "0123456789abcdef";
-    int index = 0;
-    int start = 0;
-    int end;
-    char temp;
-
-    if (value == 0)
-        s[index++] = '0';
-
-    while (value > 0)
-    {
-        s[index++] = hex_digits[value % 16];
-        value /= 16;
-    }
-
-    s[index] = '\0';
-    end = index - 1;
-
-    while (start < end)
-    {
-        temp = s[start];
-        s[start] = s[end];
-        s[end] = temp;
-        start++;
-        end--;
-    }
-}
-
-static void short_hex_convert(char *s, unsigned short int value)
-{
-    const char hex_digits[] = "0123456789abcdef";
-    int index = 0;
-    int start = 0;
-    int end;
-    char temp;
-
-    if (value == 0)
-        s[index++] = '0';
-
-    while (value > 0)
-    {
-        s[index++] = hex_digits[value % 16];
-        value /= 16;
-    }
-
-    s[index] = '\0';
-    end = index - 1;
-
-    while (start < end)
-    {
-        temp = s[start];
-        s[start] = s[end];
-        s[end] = temp;
-        start++;
-        end--;
-    }
+    s[ind] = '\0';
 }
 
 static void extend_string(char *dst, char *src, size_t *ind, size_t size)
@@ -359,41 +95,41 @@ int my_snprintf(char *s, size_t size, const char *format, ...)
                 
             case 'd':
                 if (is_long)
-                    long_int_convert(buff, va_arg(vl, long));
+                    decimal_convert(buff, va_arg(vl, long), 10);
                 else if (is_short)
-                    short_int_convert(buff, (short)va_arg(vl, int));
+                    decimal_convert(buff, (short)va_arg(vl, int), 10);
                 else
-                    int_convert(buff, va_arg(vl, int));
+                    decimal_convert(buff, va_arg(vl, int), 10);
                 extend_string(s, buff, &ind, size);
                 break;
 
             case 'i':
                 if (is_long)
-                    long_int_convert(buff, va_arg(vl, long));
+                    decimal_convert(buff, va_arg(vl, long), 10);
                 else if (is_short)
-                    short_int_convert(buff, (short)va_arg(vl, int));
+                    decimal_convert(buff, (short)va_arg(vl, int), 10);
                 else
-                    int_convert(buff, va_arg(vl, int));
+                    decimal_convert(buff, va_arg(vl, int), 10);
                 extend_string(s, buff, &ind, size);
                 break;
 
             case 'x':
                 if (is_long)
-                    long_hex_convert(buff, va_arg(vl, long));
+                    decimal_convert(buff, va_arg(vl, long), 16);
                 else if (is_short)
-                    short_hex_convert(buff, (short)va_arg(vl, int));
+                    decimal_convert(buff, (short)va_arg(vl, int), 16);
                 else
-                    hex_convert(buff, va_arg(vl, int));
+                    decimal_convert(buff, va_arg(vl, int), 16);
                 extend_string(s, buff, &ind, size);
                 break;
 
             case 'o':
                 if (is_long)
-                    long_oct_convert(buff, va_arg(vl, long));
+                    decimal_convert(buff, va_arg(vl, long), 8);
                 else if (is_short)
-                    short_oct_convert(buff, (short)va_arg(vl, int));
+                    decimal_convert(buff, (short)va_arg(vl, int), 8);
                 else
-                    oct_convert(buff, va_arg(vl, int));
+                    decimal_convert(buff, va_arg(vl, int), 8);
                 extend_string(s, buff, &ind, size);
                 break;
 

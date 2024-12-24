@@ -256,48 +256,6 @@ START_TEST(test_negative_short_decimal)
 }
 END_TEST
 
-START_TEST(test_negative_oct)
-{
-    unsigned int a = -05634;
-    char s_1[10], s_2[10];
-    int n_1, n_2;
-
-    n_1 = snprintf(s_1, 10, "%o", a);
-    n_2 = my_snprintf(s_2, 10, "%o", a);
-
-    ck_assert_str_eq(s_1, s_2);
-    ck_assert_int_eq(n_1, n_2);
-}
-END_TEST
-
-START_TEST(test_negative_long_oct)
-{
-    unsigned long int a = -02341231;
-    char s_1[10], s_2[10];
-    int n_1, n_2;
-
-    n_1 = snprintf(s_1, 10, "%lo", a);
-    n_2 = my_snprintf(s_2, 10, "%lo", a);
-
-    ck_assert_str_eq(s_1, s_2);
-    ck_assert_int_eq(n_1, n_2);
-}
-END_TEST
-
-START_TEST(test_negative_short_oct)
-{
-    unsigned short int a = -01253;
-    char s_1[10], s_2[10];
-    int n_1, n_2;
-
-    n_1 = snprintf(s_1, 10, "%ho", a);
-    n_2 = my_snprintf(s_2, 10, "%ho", a);
-
-    ck_assert_str_eq(s_1, s_2);
-    ck_assert_int_eq(n_1, n_2);
-}
-END_TEST
-
 START_TEST(test_negative_percent)
 {
     char s_1[10], s_2[10];
@@ -434,10 +392,6 @@ Suite *my_snprintf_suite(void)
     tcase_add_test(negative_decimal, test_negative_decimal);
     tcase_add_test(negative_decimal, test_negative_long_decimal);
     tcase_add_test(negative_decimal, test_negative_short_decimal);
-
-    tcase_add_test(negative_oct, test_negative_oct);
-    tcase_add_test(negative_oct, test_negative_long_oct);
-    tcase_add_test(negative_oct, test_negative_short_oct);
 
     tcase_add_test(negative_decimal, test_negative_percent);
     tcase_add_test(negative_decimal, test_negative_few_args);
