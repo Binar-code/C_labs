@@ -1,0 +1,1 @@
+./func_tests/data/aboba.txt ./func_tests/data/temp_out.txt
