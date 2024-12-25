@@ -55,6 +55,17 @@ build_unit_dynamic: clean
 	$(foreach src, $(UNIT_SRC), $(CC) $(CFLAGS) $(TEST_LDFLAGS) -c $(src) -o $(OUT_DIR)$(notdir $(src:.c=.o));)
 	$(CC) $(CFLAGS) $(UNIT_OBJS) -o app.exe -L$(OUT_DIR) -larr $(TEST_LDFLAGS) -Wl,-rpath,$(OUT_DIR)
 
+# ДИНАМИЧЕСКАЯ БИБЛИОТЕКА (динамическая загрузка)
+build_dynamic_load: clean
+	$(MAKE) build_dynamic_lib
+	$(CC) $(CFLAGS) -c $(MAIN) -o $(OUT_DIR)main.o
+	$(CC) -DDYN_LIB=1 -o app.exe $(OUT_DIR)main.o -L$(OUT_DIR) -larr -Wl,-rpath,$(OUT_DIR)
+
+build_unit_dynamic_load: clean
+	$(MAKE) build_dynamic_lib
+	$(foreach src, $(UNIT_SRC), $(CC) $(CFLAGS) $(TEST_LDFLAGS) -c $(src) -o $(OUT_DIR)$(notdir $(src:.c=.o));)
+	$(CC) -DDYN_LIB=1 -o app.exe $(UNIT_OBJS) -L$(OUT_DIR) -larr $(TEST_LDFLAGS) -Wl,-rpath,$(OUT_DIR)
+
 test: clean
 	@echo STATIC LIB TEST
 	@echo Func tests
@@ -70,5 +81,13 @@ test: clean
 	@$(MAKE) func
 	@echo Unit tests
 	@$(MAKE) build_unit_dynamic 1>/dev/null
+	@./app.exe
+	@echo
+	@echo "DYNAMIC LIB (dynamic load)"
+	@echo Func tests
+	@$(MAKE) build_dynamic_load 1>/dev/null
+	@$(MAKE) func
+	@echo Unit tests
+	@$(MAKE) build_unit_dynamic_load 1>/dev/null
 	@./app.exe
 	@$(MAKE) clean
